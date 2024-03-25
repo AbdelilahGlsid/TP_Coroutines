@@ -1,1 +1,1 @@
-<img src="Screenshot.jpg" alt="Image Alt Text">
+<img width="200px" src="Screenshot.jpg" alt="Image Alt Text">
