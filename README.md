@@ -1,0 +1,1 @@
+<img src="Screenshot.jpg" alt="Image Alt Text">
