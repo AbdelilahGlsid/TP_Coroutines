@@ -18,6 +18,7 @@ package com.example.racetracker.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,11 +47,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import com.example.racetracker.R
 import com.example.racetracker.ui.theme.RaceTrackerTheme
 import kotlinx.coroutines.coroutineScope
@@ -63,10 +69,10 @@ fun RaceTrackerApp() {
      * Coroutines that implementation detail is stripped out.
      */
     val playerOne = remember {
-        RaceParticipant(name = "Player 1", progressIncrement = 1)
+        RaceParticipant(name = "Player 1", progressIncrement = 1, marginIncrement = 1 )
     }
     val playerTwo = remember {
-        RaceParticipant(name = "Player 2", progressIncrement = 2)
+        RaceParticipant(name = "Player 2", progressIncrement = 2, marginIncrement = 2 )
     }
     var raceInProgress by remember { mutableStateOf(false) }
 
@@ -94,6 +100,10 @@ fun RaceTrackerApp() {
     )
 }
 
+fun getSizeInDp(sizeInPixels: Int, density: Density): Float {
+    return sizeInPixels / density.density
+} // function that convert pixels to dp
+
 @Composable
 private fun RaceTrackerScreen(
     playerOne: RaceParticipant,
@@ -102,6 +112,8 @@ private fun RaceTrackerScreen(
     onRunStateChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val density = LocalDensity.current
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -118,11 +130,25 @@ private fun RaceTrackerScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_walk),
-                contentDescription = null,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
-            )
+            val rowLength = remember { mutableStateOf(0.dp) } // value of row length
+            Row(
+                modifier = Modifier
+                    .padding(start = 60.dp)
+                    .onGloballyPositioned { coordinates ->
+                        rowLength.value = getSizeInDp(coordinates.size.width, density).dp - 40.dp //minus size of icon
+                    }
+                    .fillMaxSize(),
+            ){
+                Icon(
+                    painter = painterResource(R.drawable.ic_walk),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(bottom = 10.dp, top = 10.dp)
+                        .padding(start = ((rowLength.value / 100 ) * playerOne.currentMargin))
+                        .size(40.dp),
+                )
+            }
+
             StatusIndicator(
                 participantName = playerOne.name,
                 currentProgress = playerOne.currentProgress,
@@ -134,6 +160,22 @@ private fun RaceTrackerScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
+
+            Row(
+                modifier = Modifier
+                    .padding(start = 60.dp)
+                    .fillMaxSize(),
+            ){
+                Icon(
+                    painter = painterResource(R.drawable.ic_walk),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(bottom = 10.dp, top = 10.dp)
+                        .padding(start = ((rowLength.value / 100 ) * playerTwo.currentMargin))
+                        .size(40.dp),
+                )
+            }
+
             StatusIndicator(
                 participantName = playerTwo.name,
                 currentProgress = playerTwo.currentProgress,

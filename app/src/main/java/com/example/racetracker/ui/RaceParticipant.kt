@@ -28,9 +28,12 @@ import kotlin.coroutines.cancellation.CancellationException
 class RaceParticipant(
     val name: String,
     val maxProgress: Int = 100,
-    val progressDelayMillis: Long = 500L,
+    val progressDelayMillis: Long = 50L,
     private val progressIncrement: Int = 1,
-    private val initialProgress: Int = 0
+    private val initialProgress: Int = 0,
+
+    private val marginIncrement: Int = 1,
+    private val initialMargin: Int = 0
 ) {
     init {
         require(maxProgress > 0) { "maxProgress=$maxProgress; must be > 0" }
@@ -42,12 +45,15 @@ class RaceParticipant(
      */
     var currentProgress by mutableStateOf(initialProgress)
         private set
+    var currentMargin by mutableStateOf(initialMargin)
+        private set
 
     suspend fun run() {
         try {
             while (currentProgress < maxProgress) {
                 delay(progressDelayMillis)
                 currentProgress += progressIncrement
+                currentMargin += marginIncrement
             }
         } catch (e: CancellationException) {
             Log.e("RaceParticipant", "$name: ${e.message}")
@@ -60,6 +66,7 @@ class RaceParticipant(
      */
     fun reset() {
         currentProgress = 0
+        currentMargin = 0
     }
 }
 
